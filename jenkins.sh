@@ -80,8 +80,7 @@ $ jenkins.sh -r : remove all the software packages required to run the jenkins a
 
 function main() {
     until [ -z "$1" ]; do
-	case "$1")
-		    shift;;
+
     -i | --install-jenkins)
         INSTALL_PKG=1
         echo_info "Will install Jenkins"
@@ -90,6 +89,17 @@ function main() {
         REMOVE_PKG=1
         echo_info "Will remove Jenkins"
         shift;;
+    -h | --help)
+	print_help
+	exit 1;;
+    *)
+	print_help
+	if [ "$1" != "-h" -o "$1" != "--help" -o "$1" != "-help" ]; then 
+		echo_fatal "Unknown option $1"
+	fi 
+	break;;
+	esac
+done
 
   if [ "$INSTALL_PKG" = "1" ] ; then
     	install_jenkins()
