@@ -5,129 +5,98 @@
 #
 # Description :
 ################################################################################
-# Setting the environment variables to be used later in the script
-set -e
-################################################################################
-# Defining the environment variables
-################################################################################
-# Performed an first update
-YUM_SYSTEM_UPDATE="update"
-YUM_PACKAGE_NAME="java-1.8.0-openjdk java-1.8.0-openjdk-devel"
-# Performed an first update
-DEB_SYSTEM_UPDATE="update"
-DEB_PACKAGE_NAME="openjdk-8-jdk openjdk-8-jre"
-# Perform the jenkins set of commands to install it RHEL/CentOS
-YUM_JENKINS_KEY="sudo curl -o /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo"
-YUM_JENKINS_KEY_IMPORT="sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key"
-YUM_JENKINS_INSTALL="jenkins"
-# Perform the jeniins set of commands to install it Debian
-DEB_JENKINS_KEY="wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -"
-DEB_JENKINS_KEY_IMPORT="sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'"
-DEB_JENKINS_INSTALL="jenkins"
-# Defining the generic environment variable
-PACKAGE="jenkins"
-################################################################################
-# Defining different causes to be used based on the type of the OS
+# https://youtu.be/UupPAfu6Ryk
 
- if cat /etc/*release | grep ^NAME | grep CentOS; then
-    echo "==============================================="
-    echo "Installing packages $YUM_PACKAGE_NAME on CentOS"
-    echo "==============================================="
-    #Perform the first update on the OS
-    yum install -y $YUM_SYSTEM_UPDATE
-    #Perform the java installation
-    yum install -y $YUM_PACKAGE_NAME
-    #Perform the jenkins installation
-    $YUM_JENKINS_KEY
-    $YUM_JENKINS_KEY_IMPORT
-    yum install -y $YUM_JENKINS_INSTALL
+export DEBIAN_FRONTEND=noninteractive
 
- elif cat /etc/*release | grep ^NAME | grep Red; then
-    echo "==============================================="
-    echo "Installing packages $YUM_PACKAGE_NAME on RedHat"
-    echo "==============================================="
-    #Perform the first update on the OS
-    yum install -y $YUM_SYSTEM_UPDATE
-    #Perform the java installation
-    yum install -y $YUM_PACKAGE_NAME
-    #Perform the jenkins installation
-    $YUM_JENKINS_KEY
-    $YUM_JENKINS_KEY_IMPORT
-    yum install -y $YUM_JENKINS_INSTALL
 
- elif cat /etc/*release | grep ^NAME | grep Fedora; then
-    echo "================================================"
-    echo "Installing packages $YUM_PACKAGE_NAME on Fedorea"
-    echo "================================================"
-    #Perform the first update on the OS
-    yum install -y $YUM_SYSTEM_UPDATE
-    #Perform the java installation
-    yum install -y $YUM_PACKAGE_NAME
-    #Perform the jenkins installation
-    $YUM_JENKINS_KEY
-    $YUM_JENKINS_KEY_IMPORT
-    yum install -y $YUM_JENKINS_INSTALL
+###################################
+# colorful echos
+###################################
 
- elif cat /etc/*release | grep ^NAME | grep Ubuntu; then
-    echo "==============================================="
-    echo "Installing packages $DEB_PACKAGE_NAME on Ubuntu"
-    echo "==============================================="
-    #Perform the first update on the OS
-    apt-get update
-    #Perform the java installation
-    apt-get install -y $DEB_PACKAGE_NAME
-    #Perform the jenkins installation
-    $DEB_JENKINS_KEY
-    $DEB_JENKINS_KEY_IMPORT
-    apt-get install -y $DEB_JENKINS_INSTALL
+black='\E[30m'
+red='\E[31m'
+green='\E[32m'
+yellow='\E[33m'
+blue='\E[1;34m'
+magenta='\E[35m'
+cyan='\E[36m'
+white='\E[37m'
+reset_color='\E[00m'
+COLORIZE=1
 
- elif cat /etc/*release | grep ^NAME | grep Debian ; then
-    echo "==============================================="
-    echo "Installing packages $DEB_PACKAGE_NAME on Debian"
-    echo "==============================================="
-    #Perform the first update on the OS
-    apt-get update
-    #Perform the java installation
-    apt-get install -y $DEB_PACKAGE_NAME
-    #Perform the jenkins installation
-    $DEB_JENKINS_KEY
-    $DEB_JENKINS_KEY_IMPORT
-    apt-get install -y $DEB_JENKINS_INSTALL
+cecho()  {
+    # Color-echo
+    # arg1 = message
+    # arg2 = color
+    local default_msg="No Message."
+    message=${1:-$default_msg}
+    color=${2:-$green}
+    [ "$COLORIZE" = "1" ] && message="$color$message$reset_color"
+    echo -e "$message"
+    return
+}
 
- elif cat /etc/*release | grep ^NAME | grep Mint ; then
-    echo "============================================="
-    echo "Installing packages $DEB_PACKAGE_NAME on Mint"
-    echo "============================================="
-    #Perform the first update on the OS
-    apt-get update
-    #Perform the java installation
-    apt-get install -y $DEB_PACKAGE_NAME
-    #Perform the jenkins installation
-    $DEB_JENKINS_KEY
-    $DEB_JENKINS_KEY_IMPORT
-    apt-get install -y $DEB_JENKINS_INSTALL
+echo_error()   { cecho "$*" $red          ;}
+echo_fatal()   { cecho "$*" $red; exit -1 ;}
+echo_warning() { cecho "$*" $yellow       ;}
+echo_success() { cecho "$*" $green        ;}
+echo_info()    { cecho "$*" $blue         ;}
 
- elif cat /etc/*release | grep ^NAME | grep Knoppix ; then
-    echo "================================================="
-    echo "Installing packages $DEB_PACKAGE_NAME on Kanoppix"
-    echo "================================================="
-    #Perform the first update on the OS
-    apt-get update
-    #Perform the java installation
-    apt-get install -y $DEB_PACKAGE_NAME
-    #Perform the jenkins installation
-    $DEB_JENKINS_KEY
-    $DEB_JENKINS_KEY_IMPORT
-    apt-get install -y $DEB_JENKINS_INSTALL
+install_jenkins(){
+  echo_ino "The Jenkins Installation Process it Started!"
+  sleep 2s
+  ./src/install.sh
+  echo_info "The Jenkins Installation has Finished!"
+}
 
- else
-    echo "OS NOT DETECTED, couldn't install package $PACKAGE"
-    exit 1;
- fi
+uninstall_jenkins(){
+  echo_info "The Jenkins Uninstalling Process it Started!"
+  sleep 2s
+  ./src/uninstall.sh
+  echo_info "The Jenkins Uninstalling Process has Finished!"
+}
 
-################################################################################
-# In order to remove the jenkins installation. The software it will ONLY remove
-#jenkins. Not other 3rt party software.
-################################################################################
+############################
+# manage options and helps
+###########################
+function print_help() {
+  echo_info '
+This program installs the Jenkins software platforms from official repository.
+You should have RHEL/CentOS/Ubuntu16.XX/18.XX/19.XX/Fedora or Debian. Root password required.
+Options
+-h
+   print this help
+-i | --install-jenkins
+   Remove required 3rd party packages and official Jenkins
+-r | --remove-jenkins
+   Remove required 3rd party packages and official Jenkins
 
-exit 0
+Usage:
+$ jenkins.sh -i : install all the software packages required to run the jenkins application
+$ jenkins.sh -r : remove all the software packages required to run the jenkins application.
+'
+}
+
+function main() {
+    until [ -z "$1" ]; do
+	case "$1")
+		    shift;;
+    -i | --install-jenkins)
+        INSTALL_PKG=1
+        echo_info "Will install Jenkins"
+        shift;;
+    -r | --remove-jenkins)
+        REMOVE_PKG=1
+        echo_info "Will remove Jenkins"
+        shift;;
+
+  if [ "$INSTALL_PKG" = "1" ] ; then
+    	install_jenkins()
+    	echo_info "Installed the required packages"
+    fi
+  if [ "$REMOVE_PKG" = "1" ] ; then
+      	uninstall_jenkins()
+      	echo_info "Uninstalled the required packages"
+      fi
+  }
